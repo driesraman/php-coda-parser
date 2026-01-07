@@ -2,6 +2,8 @@
 
 namespace Codelicious\Coda\Statements;
 
+use Codelicious\Coda\Values\StructuredSepaMessage;
+
 /**
  * @package Codelicious\Coda
  * @author Wim Verstuyf (wim.verstuyf@codelicious.be)
@@ -44,5 +46,26 @@ class AccountOtherParty
 	public function getCurrencyCode(): string
 	{
 		return $this->currencyCode;
+	}
+
+	/**
+	 * Create a new AccountOtherParty with missing data completed from SEPA message
+	 * Only fills in empty fields, does not override existing data
+	 *
+	 * @param StructuredSepaMessage $sepa
+	 * @return AccountOtherParty
+	 */
+	public function completeFromSepa(StructuredSepaMessage $sepa): AccountOtherParty
+	{
+		$name = $this->name ?: $sepa->getName();
+		$number = $this->number ?: $sepa->getAccount();
+		$bic = $this->bic;
+		$currency = $this->currencyCode;
+
+		if ($name !== $this->name || $number !== $this->number) {
+			return new AccountOtherParty($name, $bic, $number, $currency);
+		}
+
+		return $this;
 	}
 }

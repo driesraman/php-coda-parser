@@ -10,7 +10,6 @@ use Codelicious\Coda\Lines\TransactionPart2Line;
 use Codelicious\Coda\Statements\Transaction;
 use Codelicious\Coda\Statements\TransactionCode;
 use Codelicious\Coda\Values\Message;
-use DateTime;
 use function Codelicious\Coda\Helpers\filterLinesOfTypes;
 use function Codelicious\Coda\Helpers\getFirstLineOfType;
 
@@ -93,6 +92,13 @@ class TransactionParser
 			$clientReference = $transactionPart2Line->getClientReference()->getValue();
 		}
 
+        $sepaParser = new SepaMessageParser();
+		$sepaMessage = $sepaParser->parse($lines);
+
+		if ($sepaMessage && (empty($account->getName()) || empty($account->getNumber()))) {
+			$account = $account->completeFromSepa($sepaMessage);
+		}
+
 		return new Transaction(
 			$account,
 			$statementSequence,
@@ -105,7 +111,8 @@ class TransactionParser
 			$structuredMessage,
 			$sepaDirectDebit,
 			$transactionCode,
-			$clientReference
+			$clientReference,
+			$sepaMessage
 		);
 	}
 

@@ -250,6 +250,65 @@ class ParserTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(1000, $result[0]->getTransactions()[0]->getAmount());
     }
 
+    public function testSepaFormat()
+    {
+        $parser = new Parser();
+
+        /** @var Statement[] $result */
+        $result = $parser->parseFile($this->getSamplePath('sample12.cod'));
+
+        $this->assertCount(1, $result);
+
+        $this->assertEquals(134709.18, $result[0]->getInitialBalance());
+        $this->assertEquals(137730.15, $result[0]->getNewBalance());
+        $this->assertEquals(new DateTime('2024-06-06'), $result[0]->getDate());
+
+        $this->assertGreaterThanOrEqual(3, count($result[0]->getTransactions()));
+
+        $transaction1 = $result[0]->getTransactions()[0];
+        $transaction2 = $result[0]->getTransactions()[1];
+        $transaction3 = $result[0]->getTransactions()[2];
+
+        $this->assertEquals(-10448.86, $transaction1->getAmount());
+        $this->assertEquals('KLANT 001', $transaction1->getAccount()->getName());
+        $this->assertEquals('LU502838207072458106', $transaction1->getAccount()->getNumber());
+        $this->assertStringContainsString('KLANT 001', $transaction1->getMessage());
+        $this->assertEquals('', $transaction1->getStructuredMessage());
+
+        $sepa1 = $transaction1->getSepaMessage();
+        $this->assertNotNull($sepa1);
+        $this->assertEquals('KLANT 001', $sepa1->getName());
+        $this->assertEquals('LU502838207072458106', $sepa1->getAccount());
+        $this->assertEquals('KLANT 00001B', $sepa1->getRemittanceInfo());
+        $this->assertEquals('eref000000000001', $sepa1->getEndToEndReference());
+
+        $this->assertEquals(-117.52, $transaction2->getAmount());
+        $this->assertEquals('KLANT 0000002', $transaction2->getAccount()->getName());
+        $this->assertEquals('LU125437755500798661', $transaction2->getAccount()->getNumber());
+        $this->assertStringContainsString('KLANT 0000002', $transaction2->getMessage());
+        $this->assertEquals('', $transaction2->getStructuredMessage());
+
+        $sepa2 = $transaction2->getSepaMessage();
+        $this->assertNotNull($sepa2);
+        $this->assertEquals('KLANT 0000002', $sepa2->getName());
+        $this->assertEquals('LU125437755500798661', $sepa2->getAccount());
+        $this->assertEquals('KLANT 00000000000001A', $sepa2->getRemittanceInfo());
+        $this->assertEquals('eref000000000002', $sepa2->getEndToEndReference());
+
+        $this->assertEquals(1343.92, $transaction3->getAmount());
+        $this->assertEquals('KLANT 0000000 200003', $transaction3->getAccount()->getName());
+        $this->assertEquals('LU974921360538726359', $transaction3->getAccount()->getNumber());
+        $this->assertStringContainsString('KLANT 0000000000003', $transaction3->getMessage());
+        $this->assertEquals('', $transaction3->getStructuredMessage());
+
+        $sepa3 = $transaction3->getSepaMessage();
+        $this->assertNotNull($sepa3);
+        $this->assertEquals('KLANT 0000000 200003', $sepa3->getName());
+        $this->assertEquals('LU974921360538726359', $sepa3->getAccount());
+        $this->assertStringContainsString('factuur 0000000/00/000002', $sepa3->getRemittanceInfo());
+        $this->assertEquals('eref000000000003', $sepa3->getEndToEndReference());
+    }
+
     private function getSamplePath($sampleFile)
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'Samples' . DIRECTORY_SEPARATOR . $sampleFile;

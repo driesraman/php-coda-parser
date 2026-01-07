@@ -3,6 +3,7 @@
 namespace Codelicious\Coda\Statements;
 
 use Codelicious\Coda\Values\SepaDirectDebit;
+use Codelicious\Coda\Values\StructuredSepaMessage;
 use DateTime;
 
 /**
@@ -36,6 +37,8 @@ class Transaction
     private $transactionCode;
     /** @var string */
     private $clientReference;
+    /** @var StructuredSepaMessage|null */
+    private $sepaMessage;
 
     /**
      * @param AccountOtherParty $account
@@ -48,6 +51,7 @@ class Transaction
      * @param string $structuredMessage
      * @param SepaDirectDebit|null $sepaDirectDebit
      * @param string $clientReference
+     * @param StructuredSepaMessage|null $sepaMessage
      */
     public function __construct(
         AccountOtherParty $account,
@@ -61,7 +65,8 @@ class Transaction
         string $structuredMessage,
         $sepaDirectDebit,
         TransactionCode $transactionCode,
-        string $clientReference
+        string $clientReference,
+        $sepaMessage = null
     )
     {
         $this->account = $account;
@@ -76,6 +81,7 @@ class Transaction
         $this->sepaDirectDebit = $sepaDirectDebit;
         $this->transactionCode = $transactionCode;
         $this->clientReference = $clientReference;
+        $this->sepaMessage = $sepaMessage;
     }
 
     public function getAccount(): AccountOtherParty
@@ -154,5 +160,13 @@ class Transaction
     public function getClientReference(): string
     {
         return $this->clientReference;
+    }
+
+    /**
+     * @return StructuredSepaMessage|null
+     */
+    public function getSepaMessage()
+    {
+        return $this->sepaMessage;
     }
 }
