@@ -177,7 +177,13 @@ class TransactionParser
 				/** @var Message|null $message */
 				$message = null;
 				if (method_exists($line, 'getMessageOrStructuredMessage')) {
-					$message = $line->getMessageOrStructuredMessage()->getMessage();
+					$mos = $line->getMessageOrStructuredMessage();
+					$structured = $mos->getStructuredMessage();
+					if ($structured !== null && $structured->getSepaDirectDebit() !== null) {
+						$message = new Message($structured->getAll());
+					} else {
+						$message = $mos->getMessage();
+					}
 				} else {
 					$message = $line->getMessage();
 				}

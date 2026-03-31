@@ -232,6 +232,20 @@ class ParserTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('BE25646548413215', $result[0]->getTransactions()[1]->getAccount()->getNumber());
     }
 
+    public function testSddTransactionMessageIncludesType21Content()
+    {
+        $parser = new Parser();
+
+        /** @var Statement[] $result */
+        $result = $parser->parseFile($this->getSamplePath('sample10.cod'));
+
+        $transaction1 = $result[0]->getTransactions()[0];
+        $transaction2 = $result[0]->getTransactions()[1];
+
+        $this->assertStringContainsString('BBE2ZZZ3215646432', $transaction1->getMessage());
+        $this->assertStringContainsString('BE25ZZZ548413215', $transaction2->getMessage());
+    }
+
     public function testTotaledTransactionsNoDetails()
     {
         $parser = new Parser();
